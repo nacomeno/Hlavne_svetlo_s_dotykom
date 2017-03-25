@@ -1,0 +1,517 @@
+
+Hlavne svetlo s dotykom 1.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000002d0  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .bss          00000007  00800060  00800060  00000344  2**0
+                  ALLOC
+  2 .comment      00000030  00000000  00000000  00000344  2**0
+                  CONTENTS, READONLY
+  3 .debug_aranges 00000050  00000000  00000000  00000374  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_info   000001b3  00000000  00000000  000003c4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_abbrev 000000cd  00000000  00000000  00000577  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_line   0000017d  00000000  00000000  00000644  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_frame  000000a8  00000000  00000000  000007c4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_str    000001ae  00000000  00000000  0000086c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_loc    00000085  00000000  00000000  00000a1a  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000040  00000000  00000000  00000a9f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	48 c0       	rjmp	.+144    	; 0x94 <__vector_1>
+   4:	20 c0       	rjmp	.+64     	; 0x46 <__bad_interrupt>
+   6:	1f c0       	rjmp	.+62     	; 0x46 <__bad_interrupt>
+   8:	1e c0       	rjmp	.+60     	; 0x46 <__bad_interrupt>
+   a:	1d c0       	rjmp	.+58     	; 0x46 <__bad_interrupt>
+   c:	1c c0       	rjmp	.+56     	; 0x46 <__bad_interrupt>
+   e:	1b c0       	rjmp	.+54     	; 0x46 <__bad_interrupt>
+  10:	1a c0       	rjmp	.+52     	; 0x46 <__bad_interrupt>
+  12:	1a c0       	rjmp	.+52     	; 0x48 <__vector_9>
+  14:	18 c0       	rjmp	.+48     	; 0x46 <__bad_interrupt>
+  16:	17 c0       	rjmp	.+46     	; 0x46 <__bad_interrupt>
+  18:	16 c0       	rjmp	.+44     	; 0x46 <__bad_interrupt>
+  1a:	15 c0       	rjmp	.+42     	; 0x46 <__bad_interrupt>
+  1c:	14 c0       	rjmp	.+40     	; 0x46 <__bad_interrupt>
+  1e:	13 c0       	rjmp	.+38     	; 0x46 <__bad_interrupt>
+  20:	12 c0       	rjmp	.+36     	; 0x46 <__bad_interrupt>
+  22:	11 c0       	rjmp	.+34     	; 0x46 <__bad_interrupt>
+  24:	10 c0       	rjmp	.+32     	; 0x46 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+
+00000032 <__do_clear_bss>:
+  32:	20 e0       	ldi	r18, 0x00	; 0
+  34:	a0 e6       	ldi	r26, 0x60	; 96
+  36:	b0 e0       	ldi	r27, 0x00	; 0
+  38:	01 c0       	rjmp	.+2      	; 0x3c <.do_clear_bss_start>
+
+0000003a <.do_clear_bss_loop>:
+  3a:	1d 92       	st	X+, r1
+
+0000003c <.do_clear_bss_start>:
+  3c:	a7 36       	cpi	r26, 0x67	; 103
+  3e:	b2 07       	cpc	r27, r18
+  40:	e1 f7       	brne	.-8      	; 0x3a <.do_clear_bss_loop>
+  42:	20 d1       	rcall	.+576    	; 0x284 <main>
+  44:	43 c1       	rjmp	.+646    	; 0x2cc <_exit>
+
+00000046 <__bad_interrupt>:
+  46:	dc cf       	rjmp	.-72     	; 0x0 <__vectors>
+
+00000048 <__vector_9>:
+volatile uint8_t i = 0;				//casova hodnota doby zopnuteho svetla t.j. cas = i*250us
+volatile uint8_t tlac = 0;			//priznak dotyku na tlacitku 
+
+
+ISR(TIMER0_OVF_vect)				// prerusenie pretecenia casovaca
+{	
+  48:	1f 92       	push	r1
+  4a:	0f 92       	push	r0
+  4c:	0f b6       	in	r0, 0x3f	; 63
+  4e:	0f 92       	push	r0
+  50:	11 24       	eor	r1, r1
+  52:	8f 93       	push	r24
+  54:	9f 93       	push	r25
+	TCNT0 = 6;						// nastavi pociatocnu hodnotu casovaca TNCT0
+  56:	86 e0       	ldi	r24, 0x06	; 6
+  58:	82 bf       	out	0x32, r24	; 50
+	if (znacka < 39)
+  5a:	80 91 62 00 	lds	r24, 0x0062
+  5e:	87 32       	cpi	r24, 0x27	; 39
+  60:	28 f4       	brcc	.+10     	; 0x6c <__vector_9+0x24>
+	znacka++;						// pri kazdom preteceni inkrementuje znacku (znacka = pocet preteceni za 1 interval)
+  62:	80 91 62 00 	lds	r24, 0x0062
+  66:	8f 5f       	subi	r24, 0xFF	; 255
+  68:	80 93 62 00 	sts	0x0062, r24
+	if (i > 0)
+  6c:	80 91 61 00 	lds	r24, 0x0061
+  70:	88 23       	and	r24, r24
+  72:	49 f0       	breq	.+18     	; 0x86 <__vector_9+0x3e>
+	{if (znacka == i)				//ak sa rovna hodnota nastavena enkoderom so znackou vypne vystup ---- znacka *250us = cas v jednej polvlne za ktory ma vypnut
+  74:	90 91 62 00 	lds	r25, 0x0062
+  78:	80 91 61 00 	lds	r24, 0x0061
+  7c:	98 13       	cpse	r25, r24
+  7e:	03 c0       	rjmp	.+6      	; 0x86 <__vector_9+0x3e>
+		PORTC &=~ ((1 << PC4) | (1 << PC5));			//vypne vystupy
+  80:	85 b3       	in	r24, 0x15	; 21
+  82:	8f 7c       	andi	r24, 0xCF	; 207
+  84:	85 bb       	out	0x15, r24	; 21
+	}
+}
+  86:	9f 91       	pop	r25
+  88:	8f 91       	pop	r24
+  8a:	0f 90       	pop	r0
+  8c:	0f be       	out	0x3f, r0	; 63
+  8e:	0f 90       	pop	r0
+  90:	1f 90       	pop	r1
+  92:	18 95       	reti
+
+00000094 <__vector_1>:
+
+ISR(INT0_vect)						//prerusenie priechodom sietoveho napatia nulou
+{
+  94:	1f 92       	push	r1
+  96:	0f 92       	push	r0
+  98:	0f b6       	in	r0, 0x3f	; 63
+  9a:	0f 92       	push	r0
+  9c:	11 24       	eor	r1, r1
+  9e:	8f 93       	push	r24
+	TCNT0 = 6;						// ak preslo sietove napatie nulou nastavi pociatocnu hodnotu TNCT0 (synchronizuje TNCT0 s priechodmi sietoveho napatia nulou) 
+  a0:	86 e0       	ldi	r24, 0x06	; 6
+  a2:	82 bf       	out	0x32, r24	; 50
+	znacka = 0;
+  a4:	10 92 62 00 	sts	0x0062, r1
+	
+	if (i > 0)						//zisti enkoderom nastavenu hodnotu oneskorenia
+  a8:	80 91 61 00 	lds	r24, 0x0061
+  ac:	88 23       	and	r24, r24
+  ae:	21 f0       	breq	.+8      	; 0xb8 <__vector_1+0x24>
+		{PORTC |= ((1 << PC4) | (1 << PC5));			//ak ma svetlo svietit t.j i>0 zapne vystup
+  b0:	85 b3       	in	r24, 0x15	; 21
+  b2:	80 63       	ori	r24, 0x30	; 48
+  b4:	85 bb       	out	0x15, r24	; 21
+  b6:	03 c0       	rjmp	.+6      	; 0xbe <__vector_1+0x2a>
+		} 
+		else
+			{PORTC &=~ ((1 << PC4) | (1 << PC5));		//ak ma byt zhasnute t.j. i==0 vypne vystup
+  b8:	85 b3       	in	r24, 0x15	; 21
+  ba:	8f 7c       	andi	r24, 0xCF	; 207
+  bc:	85 bb       	out	0x15, r24	; 21
+			}
+	if (count < 3)					//cakacia funkcia 10ms (kazdych 10ms skontroluje dalsie tlacidlo)
+  be:	80 91 63 00 	lds	r24, 0x0063
+  c2:	83 30       	cpi	r24, 0x03	; 3
+  c4:	30 f4       	brcc	.+12     	; 0xd2 <__vector_1+0x3e>
+		count++;
+  c6:	80 91 63 00 	lds	r24, 0x0063
+  ca:	8f 5f       	subi	r24, 0xFF	; 255
+  cc:	80 93 63 00 	sts	0x0063, r24
+  d0:	22 c0       	rjmp	.+68     	; 0x116 <__vector_1+0x82>
+		else
+		{count = 1;					//kazdych 30ms skontroluje priznak pre tlacitko 
+  d2:	81 e0       	ldi	r24, 0x01	; 1
+  d4:	80 93 63 00 	sts	0x0063, r24
+			if (tlac == 1)			//ak je priznak nastaveny na vypnutie kazdych 30ms uberie 250us z nastaveneho casu			
+  d8:	80 91 60 00 	lds	r24, 0x0060
+  dc:	81 30       	cpi	r24, 0x01	; 1
+  de:	61 f4       	brne	.+24     	; 0xf8 <__vector_1+0x64>
+			{i--;
+  e0:	80 91 61 00 	lds	r24, 0x0061
+  e4:	81 50       	subi	r24, 0x01	; 1
+  e6:	80 93 61 00 	sts	0x0061, r24
+				if (i == 0)
+  ea:	80 91 61 00 	lds	r24, 0x0061
+  ee:	81 11       	cpse	r24, r1
+  f0:	12 c0       	rjmp	.+36     	; 0x116 <__vector_1+0x82>
+				tlac = 0;
+  f2:	10 92 60 00 	sts	0x0060, r1
+  f6:	0f c0       	rjmp	.+30     	; 0x116 <__vector_1+0x82>
+			}
+			else if (tlac == 2)		//ak je priznak nastaveny na zapnutie tak kazdych 30ms prirata 250us t.j. do plneho svitu je to cas priblizne 1,17s
+  f8:	80 91 60 00 	lds	r24, 0x0060
+  fc:	82 30       	cpi	r24, 0x02	; 2
+  fe:	59 f4       	brne	.+22     	; 0x116 <__vector_1+0x82>
+			{i++;
+ 100:	80 91 61 00 	lds	r24, 0x0061
+ 104:	8f 5f       	subi	r24, 0xFF	; 255
+ 106:	80 93 61 00 	sts	0x0061, r24
+				if (i == 39)
+ 10a:	80 91 61 00 	lds	r24, 0x0061
+ 10e:	87 32       	cpi	r24, 0x27	; 39
+ 110:	11 f4       	brne	.+4      	; 0x116 <__vector_1+0x82>
+				tlac = 0;
+ 112:	10 92 60 00 	sts	0x0060, r1
+			}
+		}
+		
+	if (temp1 < 50)					//podla tohto vyhodnoti ci bolo tlacidlo stlacene do 500ms od stlacenia posledneho tlacidla
+ 116:	80 91 64 00 	lds	r24, 0x0064
+ 11a:	82 33       	cpi	r24, 0x32	; 50
+ 11c:	28 f4       	brcc	.+10     	; 0x128 <__vector_1+0x94>
+		temp1 ++;	
+ 11e:	80 91 64 00 	lds	r24, 0x0064
+ 122:	8f 5f       	subi	r24, 0xFF	; 255
+ 124:	80 93 64 00 	sts	0x0064, r24
+}
+ 128:	8f 91       	pop	r24
+ 12a:	0f 90       	pop	r0
+ 12c:	0f be       	out	0x3f, r0	; 63
+ 12e:	0f 90       	pop	r0
+ 130:	1f 90       	pop	r1
+ 132:	18 95       	reti
+
+00000134 <smer>:
+
+
+void smer()							//funkcia na kontrolu tlacidiel
+{
+	if (temp != j)					//ak sa nerovnaju cize bolo stlacene nejake ine tlacidlo
+ 134:	90 91 65 00 	lds	r25, 0x0065
+ 138:	80 91 66 00 	lds	r24, 0x0066
+ 13c:	98 17       	cp	r25, r24
+ 13e:	09 f4       	brne	.+2      	; 0x142 <smer+0xe>
+ 140:	55 c0       	rjmp	.+170    	; 0x1ec <smer+0xb8>
+	{
+		if (j == 1)					//ak bola stlacena jednotka
+ 142:	81 30       	cpi	r24, 0x01	; 1
+ 144:	d1 f4       	brne	.+52     	; 0x17a <smer+0x46>
+		{
+			if (temp == 2)			//otestuje ci predtym nebola stlacena dvojka a ak hej ak svetlo svieti uberie z konstanty
+ 146:	92 30       	cpi	r25, 0x02	; 2
+ 148:	51 f4       	brne	.+20     	; 0x15e <smer+0x2a>
+			{if (i > 0 )
+ 14a:	80 91 61 00 	lds	r24, 0x0061
+ 14e:	88 23       	and	r24, r24
+ 150:	89 f0       	breq	.+34     	; 0x174 <smer+0x40>
+				i--;
+ 152:	80 91 61 00 	lds	r24, 0x0061
+ 156:	81 50       	subi	r24, 0x01	; 1
+ 158:	80 93 61 00 	sts	0x0061, r24
+ 15c:	0b c0       	rjmp	.+22     	; 0x174 <smer+0x40>
+			}
+			else
+			{if (temp == 3)			//otestuje ci predtym nebola stlacena trojka a ak hej ak svetlo nie je na maxime prida konstante
+ 15e:	93 30       	cpi	r25, 0x03	; 3
+ 160:	49 f4       	brne	.+18     	; 0x174 <smer+0x40>
+				{if (i < 39)
+ 162:	80 91 61 00 	lds	r24, 0x0061
+ 166:	87 32       	cpi	r24, 0x27	; 39
+ 168:	28 f4       	brcc	.+10     	; 0x174 <smer+0x40>
+					i++;
+ 16a:	80 91 61 00 	lds	r24, 0x0061
+ 16e:	8f 5f       	subi	r24, 0xFF	; 255
+ 170:	80 93 61 00 	sts	0x0061, r24
+				}
+			}
+			temp = 0;				//ak sa rovnaju vynuluje temp cize ako keby tlacidlo bolo stale stlacene 
+ 174:	10 92 65 00 	sts	0x0065, r1
+ 178:	08 95       	ret
+		}
+		if (j == 2)					//ak bola stlacena dvojka
+ 17a:	82 30       	cpi	r24, 0x02	; 2
+ 17c:	d1 f4       	brne	.+52     	; 0x1b2 <smer+0x7e>
+		{
+			if (temp == 3)			//otestuje ci predtym nebola stlacena trojka a ak hej ak svetlo svieti uberie z konstanty
+ 17e:	93 30       	cpi	r25, 0x03	; 3
+ 180:	51 f4       	brne	.+20     	; 0x196 <smer+0x62>
+			{if (i > 0)
+ 182:	80 91 61 00 	lds	r24, 0x0061
+ 186:	88 23       	and	r24, r24
+ 188:	89 f0       	breq	.+34     	; 0x1ac <smer+0x78>
+				i--;
+ 18a:	80 91 61 00 	lds	r24, 0x0061
+ 18e:	81 50       	subi	r24, 0x01	; 1
+ 190:	80 93 61 00 	sts	0x0061, r24
+ 194:	0b c0       	rjmp	.+22     	; 0x1ac <smer+0x78>
+			}
+			else if (temp == 1)		//otestuje ci predtym nebola stlacena jednotka a ak hej ak svetlo nie je na maxime prida konstante
+ 196:	91 30       	cpi	r25, 0x01	; 1
+ 198:	49 f4       	brne	.+18     	; 0x1ac <smer+0x78>
+			{if (i < 39)
+ 19a:	80 91 61 00 	lds	r24, 0x0061
+ 19e:	87 32       	cpi	r24, 0x27	; 39
+ 1a0:	28 f4       	brcc	.+10     	; 0x1ac <smer+0x78>
+				i++;
+ 1a2:	80 91 61 00 	lds	r24, 0x0061
+ 1a6:	8f 5f       	subi	r24, 0xFF	; 255
+ 1a8:	80 93 61 00 	sts	0x0061, r24
+			}
+			temp = 0;				//ak sa rovnaju vynuluje temp cize ako keby tlacidlo bolo stale stlacene 
+ 1ac:	10 92 65 00 	sts	0x0065, r1
+ 1b0:	08 95       	ret
+		}
+		if (j == 3)					//ak bola stlacena trojka
+ 1b2:	83 30       	cpi	r24, 0x03	; 3
+ 1b4:	d9 f4       	brne	.+54     	; 0x1ec <smer+0xb8>
+		{
+			if (temp == 1)			//otestuje ci predtym nebola stlacena jednotka a ak hej ak svetlo svieti uberie z konstanty
+ 1b6:	80 91 65 00 	lds	r24, 0x0065
+ 1ba:	81 30       	cpi	r24, 0x01	; 1
+ 1bc:	51 f4       	brne	.+20     	; 0x1d2 <smer+0x9e>
+			{if (i > 0)
+ 1be:	80 91 61 00 	lds	r24, 0x0061
+ 1c2:	88 23       	and	r24, r24
+ 1c4:	89 f0       	breq	.+34     	; 0x1e8 <smer+0xb4>
+				i--;
+ 1c6:	80 91 61 00 	lds	r24, 0x0061
+ 1ca:	81 50       	subi	r24, 0x01	; 1
+ 1cc:	80 93 61 00 	sts	0x0061, r24
+ 1d0:	0b c0       	rjmp	.+22     	; 0x1e8 <smer+0xb4>
+			}
+			else if (temp == 2)		//otestuje ci predtym nebola stlacena dvojka a ak hej ak svetlo nie je na maxime prida konstante
+ 1d2:	82 30       	cpi	r24, 0x02	; 2
+ 1d4:	49 f4       	brne	.+18     	; 0x1e8 <smer+0xb4>
+			{if (i < 39)
+ 1d6:	80 91 61 00 	lds	r24, 0x0061
+ 1da:	87 32       	cpi	r24, 0x27	; 39
+ 1dc:	28 f4       	brcc	.+10     	; 0x1e8 <smer+0xb4>
+				i++;
+ 1de:	80 91 61 00 	lds	r24, 0x0061
+ 1e2:	8f 5f       	subi	r24, 0xFF	; 255
+ 1e4:	80 93 61 00 	sts	0x0061, r24
+			}
+			temp = 0;				//ak sa rovnaju vynuluje temp cize ako keby tlacidlo bolo stale stlacene
+ 1e8:	10 92 65 00 	sts	0x0065, r1
+ 1ec:	08 95       	ret
+
+000001ee <dlha_doba>:
+
+
+
+void dlha_doba()					//ak nie je ziadne tlacidlo stlacene dlhsie ako 0,5s (casom mozna zmena na iny cas)
+{
+	temp = 0;
+ 1ee:	10 92 65 00 	sts	0x0065, r1
+	j = 0;
+ 1f2:	10 92 66 00 	sts	0x0066, r1
+	if (PINC & ((1 << PC0 )) || (PINC & (1 << PC1 )) ||  (PINC & (1 << PC2 )))				//skontroluj naraz vsetky piny ci nie je nieco stlacene ak je vynuluj cakaciu konstantu
+ 1f6:	98 99       	sbic	0x13, 0	; 19
+ 1f8:	04 c0       	rjmp	.+8      	; 0x202 <dlha_doba+0x14>
+ 1fa:	99 99       	sbic	0x13, 1	; 19
+ 1fc:	02 c0       	rjmp	.+4      	; 0x202 <dlha_doba+0x14>
+ 1fe:	9a 9b       	sbis	0x13, 2	; 19
+ 200:	05 c0       	rjmp	.+10     	; 0x20c <dlha_doba+0x1e>
+	{
+		temp1 = 0;
+ 202:	10 92 64 00 	sts	0x0064, r1
+		count = 1;
+ 206:	81 e0       	ldi	r24, 0x01	; 1
+ 208:	80 93 63 00 	sts	0x0063, r24
+ 20c:	08 95       	ret
+
+0000020e <kratka_doba>:
+	}
+}
+
+void kratka_doba()					//dotyk do 0,5s
+{
+	switch (count){
+ 20e:	80 91 63 00 	lds	r24, 0x0063
+ 212:	82 30       	cpi	r24, 0x02	; 2
+ 214:	81 f0       	breq	.+32     	; 0x236 <kratka_doba+0x28>
+ 216:	83 30       	cpi	r24, 0x03	; 3
+ 218:	d1 f0       	breq	.+52     	; 0x24e <kratka_doba+0x40>
+ 21a:	81 30       	cpi	r24, 0x01	; 1
+ 21c:	19 f5       	brne	.+70     	; 0x264 <kratka_doba+0x56>
+		
+		case 1:
+		{if (PINC & (1 << PC0 ))
+ 21e:	98 9b       	sbis	0x13, 0	; 19
+ 220:	21 c0       	rjmp	.+66     	; 0x264 <kratka_doba+0x56>
+			{temp = j;
+ 222:	80 91 66 00 	lds	r24, 0x0066
+ 226:	80 93 65 00 	sts	0x0065, r24
+				j = 1;
+ 22a:	81 e0       	ldi	r24, 0x01	; 1
+ 22c:	80 93 66 00 	sts	0x0066, r24
+			temp1 = 0;}
+ 230:	10 92 64 00 	sts	0x0064, r1
+ 234:	17 c0       	rjmp	.+46     	; 0x264 <kratka_doba+0x56>
+		}
+		break;
+		
+		case 2:
+		{if (PINC & (1 << PC1 ))
+ 236:	99 9b       	sbis	0x13, 1	; 19
+ 238:	15 c0       	rjmp	.+42     	; 0x264 <kratka_doba+0x56>
+			{temp = j;
+ 23a:	80 91 66 00 	lds	r24, 0x0066
+ 23e:	80 93 65 00 	sts	0x0065, r24
+				j = 2;
+ 242:	82 e0       	ldi	r24, 0x02	; 2
+ 244:	80 93 66 00 	sts	0x0066, r24
+			temp1 = 0;}
+ 248:	10 92 64 00 	sts	0x0064, r1
+ 24c:	0b c0       	rjmp	.+22     	; 0x264 <kratka_doba+0x56>
+		}
+		break;
+		
+		case 3:
+		{if (PINC & (1 << PC2 ))
+ 24e:	9a 9b       	sbis	0x13, 2	; 19
+ 250:	09 c0       	rjmp	.+18     	; 0x264 <kratka_doba+0x56>
+			{temp = j;
+ 252:	80 91 66 00 	lds	r24, 0x0066
+ 256:	80 93 65 00 	sts	0x0065, r24
+				j = 3;
+ 25a:	83 e0       	ldi	r24, 0x03	; 3
+ 25c:	80 93 66 00 	sts	0x0066, r24
+			temp1 = 0;}
+ 260:	10 92 64 00 	sts	0x0064, r1
+		}
+		break;
+	}
+	smer();
+ 264:	67 df       	rcall	.-306    	; 0x134 <smer>
+ 266:	08 95       	ret
+
+00000268 <tlacitko>:
+}
+
+void tlacitko()						//vyhodnocovanie dotyku na tlacitku 
+{
+	if (PINC & (1 << PC3 ))			//ak je log. 1 na PC3 t.j. dotyk na tlacitku
+ 268:	9b 9b       	sbis	0x13, 3	; 19
+ 26a:	0b c0       	rjmp	.+22     	; 0x282 <tlacitko+0x1a>
+	{if (i > 0)
+ 26c:	80 91 61 00 	lds	r24, 0x0061
+ 270:	88 23       	and	r24, r24
+ 272:	21 f0       	breq	.+8      	; 0x27c <tlacitko+0x14>
+		tlac = 1;					//ak svetlo svieti tlac = 1 je priznak pre pomale vypnutie
+ 274:	81 e0       	ldi	r24, 0x01	; 1
+ 276:	80 93 60 00 	sts	0x0060, r24
+ 27a:	08 95       	ret
+		else tlac = 2;				//ak svetlo nesvieti tlac = 2 je priznak pre pomale zapnutie do maxima 
+ 27c:	82 e0       	ldi	r24, 0x02	; 2
+ 27e:	80 93 60 00 	sts	0x0060, r24
+ 282:	08 95       	ret
+
+00000284 <main>:
+}		
+
+
+int main()
+{
+	DDRC &= ~ ((1 << PC0) | (1 << PC1) | (1 << PC2) | (1 << PC3) );			//PC0,1,2,3 ako vstupne
+ 284:	84 b3       	in	r24, 0x14	; 20
+ 286:	80 7f       	andi	r24, 0xF0	; 240
+ 288:	84 bb       	out	0x14, r24	; 20
+	DDRC |= ((1 << PC4) | (1 << PC5));										//PC4,5 ak vystupne
+ 28a:	84 b3       	in	r24, 0x14	; 20
+ 28c:	80 63       	ori	r24, 0x30	; 48
+ 28e:	84 bb       	out	0x14, r24	; 20
+	DDRD &= ~ ((1 << PD0) | (1 << PD2)) ;									//PD0,2 ako vstupne
+ 290:	81 b3       	in	r24, 0x11	; 17
+ 292:	8a 7f       	andi	r24, 0xFA	; 250
+ 294:	81 bb       	out	0x11, r24	; 17
+	
+	
+	MCUCR |= (1 << ISC01);			// dobežná hrana INT0
+ 296:	85 b7       	in	r24, 0x35	; 53
+ 298:	82 60       	ori	r24, 0x02	; 2
+ 29a:	85 bf       	out	0x35, r24	; 53
+	GICR |=  (1 << INT0);			//povoli prerusenia INT0	
+ 29c:	8b b7       	in	r24, 0x3b	; 59
+ 29e:	80 64       	ori	r24, 0x40	; 64
+ 2a0:	8b bf       	out	0x3b, r24	; 59
+	TCCR0 |= (1 << CS01);			//predelicka Clko/8
+ 2a2:	83 b7       	in	r24, 0x33	; 51
+ 2a4:	82 60       	ori	r24, 0x02	; 2
+ 2a6:	83 bf       	out	0x33, r24	; 51
+	TIMSK |= (1 << TOIE0);			//prerusenie pri preteceni Timer0
+ 2a8:	89 b7       	in	r24, 0x39	; 57
+ 2aa:	81 60       	ori	r24, 0x01	; 1
+ 2ac:	89 bf       	out	0x39, r24	; 57
+	sei();							//povolenie preruseni
+ 2ae:	78 94       	sei
+	TCNT0 = 6;
+ 2b0:	86 e0       	ldi	r24, 0x06	; 6
+ 2b2:	82 bf       	out	0x32, r24	; 50
+	
+    while(1)
+    {
+		
+		if (temp1 == 50)			//ak ziadne tlacidlo nebolo stlacene dlhsie ako 500ms
+ 2b4:	80 91 64 00 	lds	r24, 0x0064
+ 2b8:	82 33       	cpi	r24, 0x32	; 50
+ 2ba:	09 f4       	brne	.+2      	; 0x2be <main+0x3a>
+		
+		dlha_doba();
+ 2bc:	98 df       	rcall	.-208    	; 0x1ee <dlha_doba>
+		
+		if (temp1 < 50)				//ak bolo nieco stlacene pred uplynutim 500ms
+ 2be:	80 91 64 00 	lds	r24, 0x0064
+ 2c2:	82 33       	cpi	r24, 0x32	; 50
+ 2c4:	08 f4       	brcc	.+2      	; 0x2c8 <main+0x44>
+		
+		kratka_doba();
+ 2c6:	a3 df       	rcall	.-186    	; 0x20e <kratka_doba>
+		
+		tlacitko();					//overenie dotyku na tlacitku
+ 2c8:	cf df       	rcall	.-98     	; 0x268 <tlacitko>
+    }
+ 2ca:	f4 cf       	rjmp	.-24     	; 0x2b4 <main+0x30>
+
+000002cc <_exit>:
+ 2cc:	f8 94       	cli
+
+000002ce <__stop_program>:
+ 2ce:	ff cf       	rjmp	.-2      	; 0x2ce <__stop_program>
